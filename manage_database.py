@@ -1,10 +1,8 @@
 import argparse
-from pymongo import MongoClient
-import os
-from dotenv import load_dotenv
-
+from database import database, client
 from models.Company import Company
 from models.Trainee import Trainee
+from models.Transaction import Transaction
 
 # Create the parser
 parser = argparse.ArgumentParser(description='create or drop collections.')
@@ -20,48 +18,41 @@ direction = args.direction
 if direction not in ['up', 'down', 'update']:
     raise Exception("Invalid argument: ", args)
 
-load_dotenv()
-
-uri = os.getenv("CONNECTION_STRING")
-database_name = os.getenv("DATABASE_NAME")
-client = MongoClient(uri)
-
 
 def up(db_models):
-    try:
-        for model in db_models:
+    for model in db_models:
+        try:
             model.up()
 
-        print('Successfully created collections.')
-    except Exception as up_error:
-        raise Exception("Unable to create collections due to the following error: ", up_error)
+            print('Successfully created: ', model.describe())
+        except Exception as up_error:
+            print(f'Unable to create {model.describe()} due to the following error: ', up_error)
 
 
 def update(db_models):
-    try:
-        for model in db_models:
+    for model in db_models:
+        try:
             model.update()
 
-        print('Successfully updated collections.')
-    except Exception as down_error:
-        raise Exception("Unable to update collections due to the following error: ", down_error)
+            print('Successfully updated: ', model.describe())
+        except Exception as down_error:
+            print(f"Unable to update {model.describe()} due to the following error: ", down_error)
 
 
 def down(db_models):
-    try:
-        for model in db_models:
+    for model in db_models:
+        try:
             model.down()
 
-        print('Successfully dropped collections.')
-    except Exception as down_error:
-        raise Exception("Unable to drop collections due to the following error: ", down_error)
+            print('Successfully dropped: ', model.describe())
+        except Exception as down_error:
+            print(f"Unable to drop {model.describe()} due to the following error: ", down_error)
 
 
 try:
-    database = client.get_database(database_name)
-    create_models = [Company(database), Trainee(database)]
-    update_models = [Company(database), Trainee(database)]
-    drop_models = [Trainee(database), Company(database)]
+    create_models = [Company(database), Trainee(database), Transaction(database)]
+    update_models = [Company(database), Trainee(database), Transaction(database)]
+    drop_models = [Trainee(database), Company(database), Transaction(database)]
 
     if direction == 'up':
         up(create_models)
