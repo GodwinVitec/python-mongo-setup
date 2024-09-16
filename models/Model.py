@@ -40,3 +40,6 @@ class Model:
 
     def model(self):
         return self.database.get_collection(self._collection)
+
+    def describe(self):
+        return self._collection
